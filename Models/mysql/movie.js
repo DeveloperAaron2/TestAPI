@@ -77,13 +77,14 @@ export class MovieModel {
   }
 
   static async update ({ id, input }) {
+    const [movie] = await connection.query('SELECT title, year, director, duration, poster, rate, BIN_TO_UUID(id) id FROM movie WHERE id = UUID_TO_BIN(?)', id)
+    const movieUpdated = {
+      ...movie[0],
+      ...input
+    }
+    console.log(movieUpdated)
     // ejercicio
     try {
-      const [movie] = await connection.query('SELECT title, year, director, duration, poster, rate, BIN_TO_UUID(id) id WHERE id = ?', id)
-      const movieUpdated = {
-        ...[movie[0]],
-        ...input
-      }
       const {
         genre: genreInput,
         title,
@@ -94,11 +95,11 @@ export class MovieModel {
         poster
       } = movieUpdated
       await connection.query(
-        'UPDATE movie SET title = ?, year = ?, duration = ?, director = ?, rate = ?, poster = ? WHERE id = ?',
+        'UPDATE movie SET title = ?, year = ?, duration = ?, director = ?, rate = ?, poster = ? WHERE id = UUID_TO_BIN(?)',
         [title, year, duration, director, rate, poster, id]
       )
     } catch (e) {
-      throw new Error(`Error Updating movie ${id}`)
+      throw new Error(e)
     }
   }
 }
